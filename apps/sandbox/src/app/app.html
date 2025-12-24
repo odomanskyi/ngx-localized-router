@@ -1,0 +1,7 @@
+<nav class="nav">
+  @for (item of navItems; track item.url) {
+    <a class="nav__item" [routerLink]="item.url | localizeRoute:currentLanguage()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ item.label }}</a>
+  }
+</nav>
+
+<router-outlet></router-outlet>
