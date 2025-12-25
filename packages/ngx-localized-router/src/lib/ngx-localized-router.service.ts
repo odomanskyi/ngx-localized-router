@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { NavigationEnd, Router } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 
-import { filter, map } from 'rxjs';
+import { distinctUntilChanged, filter, map, Subject, tap } from 'rxjs';
 
 import { NgxLocalizedRouterOptionsToken } from './ngx-localized-router-options-token';
 import { ngxLocalizedRouterLangSegmentName } from './ngx-localized-router-lang-segment-name';
@@ -11,6 +11,8 @@ export class NgxLocalizedRouterService {
   private _initialConfig = inject(NgxLocalizedRouterOptionsToken);
   private _router = inject(Router);
 
+  private _initialLanguageResolved = false;
+
   private _defaultLanguage = signal<string>(
     this._initialConfig.defaultLanguage,
   );
@@ -19,9 +21,15 @@ export class NgxLocalizedRouterService {
   );
   private _routeLanguage = signal<string>(this._defaultLanguage());
 
+  private _routeLanguageChanged = new Subject<string>();
+
   readonly defaultLanguage = this._defaultLanguage.asReadonly();
   readonly supportedLanguages = this._supportedLanguages.asReadonly();
   readonly routeLanguage = this._routeLanguage.asReadonly();
+
+  readonly routeLanguageChanged = this._routeLanguageChanged
+    .asObservable()
+    .pipe(distinctUntilChanged());
 
   constructor() {
     this._handleNavigation();
@@ -60,6 +68,18 @@ export class NgxLocalizedRouterService {
   private _handleNavigation(): void {
     this._router.events
       .pipe(
+        filter(
+          (event) =>
+            event instanceof NavigationEnd || event instanceof NavigationStart,
+        ),
+        tap((event) => {
+          if (
+            event instanceof NavigationStart &&
+            event.url === `/${this.defaultLanguage()}`
+          ) {
+            void this._router.navigateByUrl('/');
+          }
+        }),
         filter((event) => event instanceof NavigationEnd),
         map(() => {
           let route = this._router.routerState.snapshot.root;
@@ -67,11 +87,24 @@ export class NgxLocalizedRouterService {
           while (route.firstChild) {
             route = route.firstChild;
           }
-          return route.paramMap.get(ngxLocalizedRouterLangSegmentName);
+          return (
+            route.paramMap.get(ngxLocalizedRouterLangSegmentName) ||
+            this.defaultLanguage()
+          );
+        }),
+        tap((language) => {
+          this._routeLanguage.set(language);
+          this._routeLanguageChanged.next(language);
+
+          if (
+            !this._initialLanguageResolved &&
+            this._initialConfig.languageResolved
+          ) {
+            this._initialConfig.languageResolved(language);
+            this._initialLanguageResolved = true;
+          }
         }),
       )
-      .subscribe((lang) =>
-        this._routeLanguage.set(lang || this.defaultLanguage()),
-      );
+      .subscribe();
   }
 }

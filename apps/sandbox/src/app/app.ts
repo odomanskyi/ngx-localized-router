@@ -1,6 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { LocalizeRoutePipe } from '@ngx-localized-router';
+import {
+  LocalizeRoutePipe,
+  NgxLocalizedRouterService,
+} from '@ngx-localized-router';
 
 @Component({
   imports: [RouterModule, LocalizeRoutePipe],
@@ -33,4 +36,8 @@ export class App {
   ];
 
   currentLanguage = signal('en');
+
+  ngxLocalizedRouterService = inject(
+    NgxLocalizedRouterService,
+  ).routeLanguageChanged.subscribe((lang) => this.currentLanguage.set(lang));
 }

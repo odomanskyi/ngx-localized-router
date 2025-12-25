@@ -20,6 +20,9 @@ export const appConfig: ApplicationConfig = {
     provideNgxLocalizedRouter({
       defaultLanguage: 'de',
       languages: ['en', 'de'],
+      languageResolved: (language: string) => {
+        console.log('Router language resolved:', language);
+      },
     }),
     provideRouter(localizeRoutes(appRoutes)),
   ],
