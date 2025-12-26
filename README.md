@@ -13,5 +13,11 @@ In your app config:
         // Load translations, set app language etc...
       },
     }),
-    provideRouter(localizeRoutes(appRoutes)),
+    provideRouter(localizeRoutes(appRoutes))
+```
+
+Url localization:
+
+```html
+<a class="nav__item" [routerLink]="'/some-route' | localizeRoute:'en'">Label</a>
 ```
