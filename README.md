@@ -1,3 +1,4 @@
 # ngx-localized-router
-Description: 
-https://github.com/odomanskyi/ngx-localized-router/tree/main/packages/ngx-localized-router
+
+Npm:
+https://www.npmjs.com/package/ngx-localized-router
