@@ -45,7 +45,10 @@ export class NgxLocalizedRouterService {
     );
   }
 
-  localizeUrl(url: string | string[], language: string): string {
+  localizeUrl(
+    url: string | string[],
+    language: string = this.routeLanguage(),
+  ): string {
     let path = Array.isArray(url) ? url.join('/') : url;
 
     if (!path.startsWith('/')) {
