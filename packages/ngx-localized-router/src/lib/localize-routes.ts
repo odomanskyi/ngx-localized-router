@@ -10,11 +10,15 @@ const patchRoutes = (routes: Routes, depth = 0): Routes =>
         ? { children: patchRoutes(route.children || [], depth + 1) }
         : {};
 
+      const canMatch = !Object.hasOwn(route, 'redirectTo')
+        ? { canMatch: [localizedRouteMatcher, ...(route.canMatch || [])] }
+        : {};
+
       const patchedRoutes = [
         {
           ...route,
           ...children,
-          canMatch: [localizedRouteMatcher, ...(route.canMatch || [])],
+          ...canMatch,
         },
       ];
 
@@ -22,10 +26,10 @@ const patchRoutes = (routes: Routes, depth = 0): Routes =>
         patchedRoutes.push({
           ...route,
           ...children,
+          ...canMatch,
           path: [`:${ngxLocalizedRouterLangSegmentName}`, route.path]
             .filter(Boolean)
             .join('/'),
-          canMatch: [localizedRouteMatcher, ...(route.canMatch || [])],
         });
       }
 
