@@ -6,22 +6,26 @@ import { ngxLocalizedRouterLangSegmentName } from './ngx-localized-router-lang-s
 const patchRoutes = (routes: Routes, depth = 0): Routes =>
   routes
     .map((route) => {
+      const children = route.children?.length
+        ? { children: patchRoutes(route.children || [], depth + 1) }
+        : {};
+
       const patchedRoutes = [
         {
           ...route,
+          ...children,
           canMatch: [localizedRouteMatcher, ...(route.canMatch || [])],
-          children: patchRoutes(route.children || [], depth + 1),
         },
       ];
 
       if (!depth) {
         patchedRoutes.push({
           ...route,
+          ...children,
           path: [`:${ngxLocalizedRouterLangSegmentName}`, route.path]
             .filter(Boolean)
             .join('/'),
           canMatch: [localizedRouteMatcher, ...(route.canMatch || [])],
-          children: patchRoutes(route.children || [], depth + 1),
         });
       }
 
