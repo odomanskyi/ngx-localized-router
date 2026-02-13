@@ -8,6 +8,9 @@ import {
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
+import { provideStore } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import {
   localizeRoutes,
   provideNgxLocalizedRouter,
@@ -15,15 +18,17 @@ import {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideEffects(),
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
+    provideRouter(localizeRoutes(appRoutes)),
+    provideStore({
+      router: routerReducer,
+    }),
+    provideRouterStore(),
     provideNgxLocalizedRouter({
       defaultLanguage: 'de',
       languages: ['en', 'de'],
-      languageResolved: (language: string) => {
-        console.log('Router language resolved:', language);
-      },
     }),
-    provideRouter(localizeRoutes(appRoutes)),
   ],
 };

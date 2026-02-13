@@ -1,5 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { getRouterSelectors } from '@ngrx/router-store';
 import {
   LocalizeRoutePipe,
   NgxLocalizedRouterService,
@@ -11,7 +13,7 @@ import {
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
+export class App implements OnInit {
   navItems = [
     {
       label: 'Home',
@@ -35,9 +37,17 @@ export class App {
     },
   ];
 
+  routerSelectors = getRouterSelectors();
+
   currentLanguage = signal('en');
 
   ngxLocalizedRouterService = inject(
     NgxLocalizedRouterService,
   ).routeLanguageChanged.subscribe((lang) => this.currentLanguage.set(lang));
+
+  store = inject(Store);
+
+  ngOnInit(): void {
+    this.store.select(this.routerSelectors.selectUrl).subscribe(console.log);
+  }
 }

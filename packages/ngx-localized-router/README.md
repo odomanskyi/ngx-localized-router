@@ -51,9 +51,6 @@ export const appConfig: ApplicationConfig = {
     provideNgxLocalizedRouter({
       defaultLanguage: 'de',
       languages: ['en', 'de'],
-      languageResolved: (language: string) => {
-        // Set app language, load translations etc...
-      },
     }),
     provideRouter(localizeRoutes(appRoutes)),
   ],
@@ -175,17 +172,6 @@ This ensures consistent URL generation across:
 - No access to window or document
 - Works with Angular Universal & hydration
 - Deterministic language resolution on server & client
-
-The optional languageResolved callback is invoked once, after the initial navigation:
-
-```typescript
-languageResolved: (language) => {
-  // Ideal place to:
-  // - initialize translations
-  // - sync analytics
-  // - preload language-specific data
-}
-```
 
 ## ⚡ Zoneless & Signal-First
 

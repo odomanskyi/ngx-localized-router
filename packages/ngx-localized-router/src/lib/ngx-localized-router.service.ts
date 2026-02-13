@@ -1,31 +1,32 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
-
-import { distinctUntilChanged, filter, map, Subject, tap } from 'rxjs';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { distinctUntilChanged, filter, Subject, tap } from 'rxjs';
 
 import { NgxLocalizedRouterOptionsToken } from './ngx-localized-router-options-token';
-import { ngxLocalizedRouterLangSegmentName } from './ngx-localized-router-lang-segment-name';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Injectable()
 export class NgxLocalizedRouterService {
   private _initialConfig = inject(NgxLocalizedRouterOptionsToken);
   private _router = inject(Router);
+  private _location = inject(Location);
 
-  private _initialLanguageResolved = false;
-
+  private _currentUrl = signal<string>(this._location.path());
   private _defaultLanguage = signal<string>(
     this._initialConfig.defaultLanguage,
   );
   private _supportedLanguages = signal<string[]>(
     this._initialConfig.languages || [],
   );
-  private _routeLanguage = signal<string>(this._defaultLanguage());
 
   private _routeLanguageChanged = new Subject<string>();
 
   readonly defaultLanguage = this._defaultLanguage.asReadonly();
   readonly supportedLanguages = this._supportedLanguages.asReadonly();
-  readonly routeLanguage = this._routeLanguage.asReadonly();
+
+  readonly routeLanguage = computed<string>(() =>
+    this._getLanguageFromUrl(this._currentUrl(), this._defaultLanguage()),
+  );
 
   readonly routeLanguageChanged = this._routeLanguageChanged
     .asObservable()
@@ -84,30 +85,18 @@ export class NgxLocalizedRouterService {
           }
         }),
         filter((event) => event instanceof NavigationEnd),
-        map(() => {
-          let route = this._router.routerState.snapshot.root;
-
-          while (route.firstChild) {
-            route = route.firstChild;
-          }
-          return (
-            route.paramMap.get(ngxLocalizedRouterLangSegmentName) ||
-            this.defaultLanguage()
-          );
-        }),
-        tap((language) => {
-          this._routeLanguage.set(language);
-          this._routeLanguageChanged.next(language);
-
-          if (
-            !this._initialLanguageResolved &&
-            this._initialConfig.languageResolved
-          ) {
-            this._initialConfig.languageResolved(language);
-            this._initialLanguageResolved = true;
-          }
-        }),
+        tap((event) => this._currentUrl.set(event.url)),
       )
       .subscribe();
+  }
+
+  private _getLanguageFromUrl(url: string, fallbackLanguage: string): string {
+    const firstSegment = url.split('/')[1] || '';
+
+    if (this._supportedLanguages().includes(firstSegment)) {
+      return firstSegment;
+    }
+
+    return fallbackLanguage;
   }
 }
