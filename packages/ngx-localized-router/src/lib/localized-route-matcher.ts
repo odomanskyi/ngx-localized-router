@@ -17,14 +17,5 @@ export const localizedRouteMatcher: CanMatchFn = (
     return false;
   }
 
-  if (
-    ngxLocalizedRouterService
-      .supportedLanguages()
-      .includes(segments[0]?.path) &&
-    route.path !== `:${ngxLocalizedRouterLangSegmentName}`
-  ) {
-    return false;
-  }
-
   return true;
 };
