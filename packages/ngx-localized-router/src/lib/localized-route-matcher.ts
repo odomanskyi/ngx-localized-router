@@ -11,7 +11,7 @@ export const localizedRouteMatcher: CanMatchFn = (
   const ngxLocalizedRouterService = inject(NgxLocalizedRouterService);
 
   if (
-    route.path === `:${ngxLocalizedRouterLangSegmentName}` &&
+    (route.path || '').startsWith(`:${ngxLocalizedRouterLangSegmentName}`) &&
     !ngxLocalizedRouterService.supportedLanguages().includes(segments[0]?.path)
   ) {
     return false;

@@ -91,12 +91,16 @@ export class NgxLocalizedRouterService {
   }
 
   private _getLanguageFromUrl(url: string, fallbackLanguage: string): string {
-    const firstSegment = url.split('/')[1] || '';
-
-    if (this._supportedLanguages().includes(firstSegment)) {
-      return firstSegment;
+    if (!url) {
+      return fallbackLanguage;
     }
 
-    return fallbackLanguage;
+    const path = url.split('#')[0].split('?')[0];
+    const segments = path.split('/').filter(Boolean);
+    const langSegment = segments[0] ?? '';
+
+    return this._supportedLanguages().includes(langSegment)
+      ? langSegment
+      : fallbackLanguage;
   }
 }
