@@ -2,7 +2,7 @@ import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { appRoutes } from './app.routes';
 import {
   provideClientHydration,
@@ -21,7 +21,10 @@ export const appConfig: ApplicationConfig = {
     provideEffects(),
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
-    provideRouter(localizeRoutes(appRoutes)),
+    provideRouter(
+      localizeRoutes(appRoutes),
+      withRouterConfig({ onSameUrlNavigation: 'reload' }),
+    ),
     provideStore({
       router: routerReducer,
     }),

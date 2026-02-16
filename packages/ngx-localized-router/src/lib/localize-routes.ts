@@ -23,7 +23,7 @@ const patchRoutes = (routes: Routes, depth = 0): Routes =>
       ];
 
       if (!depth) {
-        patchedRoutes.push({
+        patchedRoutes.unshift({
           ...route,
           ...children,
           ...canMatch,
