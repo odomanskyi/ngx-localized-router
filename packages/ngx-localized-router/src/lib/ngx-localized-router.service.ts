@@ -1,9 +1,10 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { distinctUntilChanged, filter, Subject, tap } from 'rxjs';
+import { distinctUntilChanged, filter, tap } from 'rxjs';
 
 import { NgxLocalizedRouterOptionsToken } from './ngx-localized-router-options-token';
 import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable()
 export class NgxLocalizedRouterService {
@@ -19,8 +20,6 @@ export class NgxLocalizedRouterService {
     this._initialConfig.languages || [],
   );
 
-  private _routeLanguageChanged = new Subject<string>();
-
   readonly defaultLanguage = this._defaultLanguage.asReadonly();
   readonly supportedLanguages = this._supportedLanguages.asReadonly();
 
@@ -28,9 +27,9 @@ export class NgxLocalizedRouterService {
     this._getLanguageFromUrl(this._currentUrl(), this._defaultLanguage()),
   );
 
-  readonly routeLanguageChanged = this._routeLanguageChanged
-    .asObservable()
-    .pipe(distinctUntilChanged());
+  readonly routeLanguageChanged = toObservable(this.routeLanguage).pipe(
+    distinctUntilChanged(),
+  );
 
   constructor() {
     this._handleNavigation();
@@ -79,9 +78,11 @@ export class NgxLocalizedRouterService {
         tap((event) => {
           if (
             event instanceof NavigationStart &&
-            event.url === `/${this.defaultLanguage()}`
+            this._urlIncludesDefaultLanguage(event.url)
           ) {
-            void this._router.navigateByUrl('/');
+            void this._router.navigateByUrl(
+              this.localizeUrl(event.url, this._defaultLanguage()),
+            );
           }
         }),
         filter((event) => event instanceof NavigationEnd),
@@ -102,5 +103,12 @@ export class NgxLocalizedRouterService {
     return this._supportedLanguages().includes(langSegment)
       ? langSegment
       : fallbackLanguage;
+  }
+
+  private _urlIncludesDefaultLanguage(url: string): boolean {
+    return (
+      url === `/${this.defaultLanguage()}` ||
+      url.startsWith(`/${this.defaultLanguage()}/`)
+    );
   }
 }

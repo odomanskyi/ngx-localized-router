@@ -41,6 +41,8 @@ export class App implements OnInit {
 
   currentLanguage = signal('en');
 
+  routeLanguage = inject(NgxLocalizedRouterService).routeLanguage;
+
   ngxLocalizedRouterService = inject(
     NgxLocalizedRouterService,
   ).routeLanguageChanged.subscribe((lang) => this.currentLanguage.set(lang));

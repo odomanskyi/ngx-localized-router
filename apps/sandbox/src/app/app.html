@@ -1,10 +1,19 @@
 <nav class="nav">
   @for (item of navItems; track item.url) {
-    <a class="nav__item" [routerLink]="item.url | localizeRoute" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ item.label }}</a>
+    <a class="nav__item" [routerLink]="item.url | localizeRoute:routeLanguage()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ item.label }}</a>
   }
 </nav>
 
 <router-outlet></router-outlet>
+
+
+<div>{{ "/en" | localizeRoute:routeLanguage() }}</div>
+<div>{{ "/#hash" | localizeRoute:routeLanguage() }}</div>
+<div>{{ "/?query=1" | localizeRoute:routeLanguage() }}</div>
+<div>{{ "/page?query=1" | localizeRoute:routeLanguage() }}</div>
+<div>{{ "/page#hash" | localizeRoute:routeLanguage() }}</div>
+<div>{{ "/page?query=1$hash" | localizeRoute:routeLanguage() }}</div>
+
 
 <hr>
 <br>
