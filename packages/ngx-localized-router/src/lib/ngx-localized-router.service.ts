@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { distinctUntilChanged, filter, tap } from 'rxjs';
 
 import { NgxLocalizedRouterOptionsToken } from './ngx-localized-router-options-token';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import { NavigationEnd, NavigationStart, Route, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { toObservable } from '@angular/core/rxjs-interop';
 
@@ -78,7 +78,8 @@ export class NgxLocalizedRouterService {
         tap((event) => {
           if (
             event instanceof NavigationStart &&
-            this._urlIncludesDefaultLanguage(event.url)
+            !this._hasExplicitlyDefinedDefaultLanguageRoute() &&
+            this._urlStartsFromDefaultLanguage(event.url)
           ) {
             void this._router.navigateByUrl(
               this.localizeUrl(event.url, this._defaultLanguage()),
@@ -105,10 +106,23 @@ export class NgxLocalizedRouterService {
       : fallbackLanguage;
   }
 
-  private _urlIncludesDefaultLanguage(url: string): boolean {
+  private _urlStartsFromDefaultLanguage(url: string): boolean {
     return (
       url === `/${this.defaultLanguage()}` ||
       url.startsWith(`/${this.defaultLanguage()}/`)
     );
+  }
+
+  private _hasExplicitlyDefinedDefaultLanguageRoute(): boolean {
+    const defaultLanguage = this._defaultLanguage();
+
+    const hasRoute = (routes?: Route[]): boolean =>
+      !!routes?.some(
+        (route) =>
+          route.path === defaultLanguage ||
+          (route.path === '' && hasRoute(route.children)),
+      );
+
+    return hasRoute(this._router.config);
   }
 }

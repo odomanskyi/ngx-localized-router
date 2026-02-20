@@ -6,13 +6,13 @@ export const appRoutes: Route[] = [
     children: [
       {
         path: ':slug',
-        loadComponent: () => import('./page').then(c => c.Page),
+        loadComponent: () => import('./page').then((c) => c.Page),
       },
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: () => import('./page').then(c => c.Page),
-      }
-    ]
-  }
+        loadComponent: () => import('./page').then((c) => c.Page),
+      },
+    ],
+  },
 ];
