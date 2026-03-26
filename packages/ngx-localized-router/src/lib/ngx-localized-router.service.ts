@@ -60,10 +60,14 @@ export class NgxLocalizedRouterService {
       this._defaultLanguage(),
     );
 
-    path = path.replace(new RegExp(`^/${languageInPath}`), '');
+    path = path
+      .replace(new RegExp(`^\\/${languageInPath}(\\/|\\?|#|$)`), '$1')
+      .replace(/^\//, '');
 
     if (language !== this.defaultLanguage()) {
-      path = `/${language}${path}`;
+      path = `/${[language, path].filter(Boolean).join('/')}`;
+    } else {
+      path = `/${path}`;
     }
 
     return path;
@@ -80,7 +84,7 @@ export class NgxLocalizedRouterService {
           if (
             event instanceof NavigationStart &&
             !this._hasExplicitlyDefinedDefaultLanguageRoute() &&
-            this._urlStartsFromDefaultLanguage(event.url)
+            this._getLanguageFromUrl(event.url, '') === this._defaultLanguage()
           ) {
             void this._router.navigateByUrl(
               this.localizeUrl(event.url, this._defaultLanguage()),
@@ -105,10 +109,6 @@ export class NgxLocalizedRouterService {
     return this._supportedLanguages().includes(langSegment)
       ? langSegment
       : fallbackLanguage;
-  }
-
-  private _urlStartsFromDefaultLanguage(url: string): boolean {
-    return url.startsWith(`/${this.defaultLanguage()}`);
   }
 
   private _hasExplicitlyDefinedDefaultLanguageRoute(): boolean {
