@@ -10,9 +10,10 @@ const patchRoutes = (routes: Routes, depth = 0): Routes =>
         ? { children: patchRoutes(route.children || [], depth + 1) }
         : {};
 
-      const canMatch = !Object.hasOwn(route, 'redirectTo')
-        ? { canMatch: [localizedRouteMatcher, ...(route.canMatch || [])] }
-        : {};
+      const canMatch =
+        typeof route.redirectTo === 'undefined'
+          ? { canMatch: [localizedRouteMatcher, ...(route.canMatch || [])] }
+          : {};
 
       const patchedRoutes = [
         {
